@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0f1117" id="metaThemeColor">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="format-detection" content="telephone=no">
+  <title>FastDrop - File & Text Sharing</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body data-theme="dark">
+    <header class="app-header">
+    <div class="header-left">
+      <div class="brand">
+        <span class="brand-icon" id="brandIcon"></span>
+        <span class="brand-name">FastDrop</span>
+        <span class="badge version-badge" id="appVersion" title="FastDrop v0.1.0 by XIV4M (Shivam)">v0.1.0</span>
+      </div>
+      <div class="storage-stats" id="storageStats" title="Disk Storage">
+        <div class="storage-bar">
+          <div class="storage-progress" id="storageProgress"></div>
+        </div>
+        <span class="storage-text" id="storageText">Checking storage...</span>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <button class="btn icon-btn mobile-only-btn" id="headerQuickTextBtn" title="Quick Text / Clipboard" aria-label="Quick Text">
+        <span class="icon" id="headerQuickTextIcon"></span>
+      </button>
+      <button class="btn icon-btn" id="themeToggle" title="Toggle Theme" aria-label="Toggle Theme">
+        <span id="themeIcon"></span>
+      </button>
+      <button class="btn btn-outline" id="authBtn" style="display: none;">
+        <span class="icon" id="authIcon"></span> <span id="authBtnText">Login</span>
+      </button>
+    </div>
+  </header>
+
+    <main class="app-container">
+        <section class="toolbar">
+      <div class="breadcrumbs" id="breadcrumbs">
+        <button class="breadcrumb-item breadcrumb-root" data-path="">
+          <span class="icon" id="homeIcon"></span> <span>Home</span>
+        </button>
+      </div>
+
+      <div class="toolbar-actions">
+        <div class="search-box">
+          <span class="search-icon" id="searchIcon"></span>
+          <input type="text" id="searchInput" placeholder="Search files... ( / )" autocomplete="off">
+          <button class="clear-search" id="clearSearch" style="display: none;" title="Clear search">&times;</button>
+        </div>
+
+        <div class="action-buttons">
+          <button class="btn btn-primary" id="btnUploadFiles" title="Upload Files">
+            <span class="icon" id="iconUpload"></span> <span>Upload</span>
+          </button>
+          <button class="btn btn-secondary" id="btnUploadFolder" title="Upload Folder Structure">
+            <span class="icon" id="iconUploadFolder"></span> <span>Folder</span>
+          </button>
+          <button class="btn btn-secondary" id="btnNewFolder" title="Create New Directory">
+            <span class="icon" id="iconNewFolder"></span> <span>New Folder</span>
+          </button>
+          <button class="btn btn-secondary" id="btnNewFile" title="Create New Text / Code File">
+            <span class="icon" id="iconNewFile"></span> <span>New File</span>
+          </button>
+          <button class="btn btn-secondary" id="btnQuickText" title="Quick Text / Clipboard Sharing">
+            <span class="icon" id="iconQuickText"></span> <span>Quick Text</span>
+          </button>
+          <button class="btn btn-secondary" id="btnDownloadZip" title="Download Current Directory as ZIP">
+            <span class="icon" id="iconZip"></span> <span>ZIP</span>
+          </button>
+          <div class="view-toggle">
+            <button class="btn icon-btn active" id="viewList" title="List View"></button>
+            <button class="btn icon-btn" id="viewGrid" title="Grid View"></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+        <div class="batch-bar" id="batchBar" style="display: none;">
+      <span id="selectedCount">0 items selected</span>
+      <div class="batch-actions">
+        <button class="btn btn-sm btn-danger" id="btnBatchDelete">Delete Selected</button>
+        <button class="btn btn-sm btn-secondary" id="btnBatchClear">Deselect All</button>
+      </div>
+    </div>
+
+        <section class="explorer-view list-mode" id="explorerView">
+      <div class="table-header">
+        <div class="col col-checkbox">
+          <input type="checkbox" id="selectAllCheckbox" title="Select All">
+        </div>
+        <div class="col col-name sortable" data-sort="name">
+          <span>Name</span> <span class="sort-indicator"></span>
+        </div>
+        <div class="col col-size sortable" data-sort="size">
+          <span>Size</span> <span class="sort-indicator"></span>
+        </div>
+        <div class="col col-date sortable" data-sort="mtime">
+          <span>Modified</span> <span class="sort-indicator"></span>
+        </div>
+        <div class="col col-actions">Actions</div>
+      </div>
+
+      <div class="items-list" id="itemsList">
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>Loading files...</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+    <div class="drag-overlay" id="dragOverlay">
+    <div class="drag-box">
+      <div class="drag-icon" id="dragOverlayIcon"></div>
+      <h2>Drop files or folders here</h2>
+      <p>Items will be streamed directly to current directory</p>
+    </div>
+  </div>
+
+    <input type="file" id="fileInput" multiple style="display: none;">
+  <input type="file" id="folderInput" webkitdirectory directory multiple style="display: none;">
+
+    <div class="upload-drawer" id="uploadDrawer" style="display: none;">
+    <div class="upload-header">
+      <span class="upload-title">Uploads (<span id="uploadCount">0</span>)</span>
+      <button class="btn icon-btn sm" id="closeUploadDrawer" title="Close">&times;</button>
+    </div>
+    <div class="upload-items" id="uploadItems"></div>
+  </div>
+
+    <div class="modal-backdrop" id="clipboardModal" style="display: none;">
+    <div class="modal clipboard-window">
+      <div class="modal-header">
+        <div class="modal-header-title">
+          <span class="icon" id="clipboardHeaderIcon"></span>
+          <div>
+            <h3>Quick Text & Clipboard</h3>
+            <span class="subtext">Share text or links instantly across devices on this network</span>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn icon-btn" id="btnClipboardClose" title="Close">&times;</button>
+        </div>
+      </div>
+      <div class="clipboard-body">
+        <textarea id="clipboardTextarea" placeholder="Paste or type text, links, code snippets or notes here..." spellcheck="false"></textarea>
+      </div>
+      <div class="clipboard-footer">
+        <div class="clipboard-meta">
+          <span id="clipboardStats">0 chars | 0 lines</span>
+          <span class="subtext" id="clipboardSyncStatus">Synced</span>
+        </div>
+        <div class="clipboard-actions">
+          <button type="button" class="btn btn-secondary" id="btnClipboardClear">Clear</button>
+          <button type="button" class="btn btn-secondary" id="btnClipboardSaveFile">
+            <span class="icon" id="iconClipSaveFile"></span> <span>Save as File</span>
+          </button>
+          <button type="button" class="btn btn-secondary" id="btnClipboardCopy">
+            <span class="icon" id="iconClipCopy"></span> <span id="btnClipboardCopyText">Copy to Clipboard</span>
+          </button>
+          <button type="button" class="btn btn-primary" id="btnClipboardSync">
+            <span class="icon" id="iconClipSync"></span> <span>Save / Share</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <div class="modal-backdrop" id="editorModal" style="display: none;">
+    <div class="modal editor-window">
+      <div class="modal-header">
+        <div class="editor-file-info">
+          <span class="file-icon" id="editorFileIcon"></span>
+          <div>
+            <h3 id="editorFileName">untitled.txt</h3>
+            <span class="subtext" id="editorFilePath">/untitled.txt</span>
+          </div>
+          <span class="badge" id="editorSaveStatus">Saved</span>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" id="btnEditorCopyText" title="Copy file content to clipboard">
+            <span class="icon" id="iconEditorCopy"></span> <span>Copy All</span>
+          </button>
+          <button class="btn btn-primary" id="btnEditorSave">
+            <span class="icon" id="iconEditorSave"></span> <span>Save (Ctrl+S)</span>
+          </button>
+          <button class="btn icon-btn" id="btnEditorClose" title="Close">&times;</button>
+        </div>
+      </div>
+      <div class="editor-body">
+        <div class="editor-gutter" id="editorGutter">1</div>
+        <div class="editor-code-container" id="editorCodeContainer">
+          <pre id="editorHighlight" aria-hidden="true"><code id="editorCode"></code></pre>
+          <textarea id="editorTextarea" spellcheck="false" placeholder="Start typing code or text..."></textarea>
+        </div>
+      </div>
+      <div class="editor-footer">
+        <span id="editorStats">Ln 1, Col 1 | 0 chars | 0 bytes</span>
+        <span class="hint">Tab: 4 spaces &bull; Ctrl+S: Save &bull; Esc: Close</span>
+      </div>
+    </div>
+  </div>
+
+    <div class="modal-backdrop" id="previewModal" style="display: none;">
+    <div class="modal preview-window">
+      <div class="modal-header">
+        <h3 id="previewTitle">File Preview</h3>
+        <div class="modal-actions">
+          <a class="btn btn-secondary" id="previewDownloadBtn" download>Download</a>
+          <button class="btn icon-btn" id="btnPreviewClose">&times;</button>
+        </div>
+      </div>
+      <div class="preview-body" id="previewBody"></div>
+    </div>
+  </div>
+
+    <div class="modal-backdrop" id="promptModal" style="display: none;">
+    <div class="modal prompt-window">
+      <div class="modal-header">
+        <h3 id="promptTitle">Prompt</h3>
+        <button class="btn icon-btn" id="btnPromptClose">&times;</button>
+      </div>
+      <form id="promptForm">
+        <div class="modal-body">
+          <p id="promptDescription">Enter value:</p>
+          <input type="text" id="promptInput" class="form-input" autofocus required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btnPromptCancel">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btnPromptSubmit">Confirm</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+    <div class="modal-backdrop" id="authModal" style="display: none;">
+    <div class="modal prompt-window">
+      <div class="modal-header">
+        <h3>FastDrop Authentication</h3>
+        <button class="btn icon-btn" id="btnAuthClose">&times;</button>
+      </div>
+      <form id="authForm">
+        <div class="modal-body">
+          <p class="subtext">This server requires authentication to access or modify files.</p>
+          <div class="auth-tabs">
+            <button type="button" class="auth-tab active" data-tab="basic">Username &amp; Password</button>
+            <button type="button" class="auth-tab" data-tab="token">Access Token</button>
+          </div>
+          <div id="tabBasic" class="auth-fields">
+            <label>Username</label>
+            <input type="text" id="authUsername" class="form-input" placeholder="admin">
+            <label>Password</label>
+            <input type="password" id="authPassword" class="form-input" placeholder="password">
+          </div>
+          <div id="tabToken" class="auth-fields" style="display: none;">
+            <label>Token</label>
+            <input type="password" id="authToken" class="form-input" placeholder="Enter bearer / secret token">
+          </div>
+          <div class="auth-remember">
+            <label><input type="checkbox" id="authRemember" checked> Remember credentials in browser</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btnAuthCancel">Cancel</button>
+          <button type="submit" class="btn btn-primary">Sign In</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+    <div class="fab-backdrop" id="fabBackdrop" style="display: none;"></div>
+  <div class="fab-container" id="fabContainer">
+    <div class="fab-speed-dial" id="fabSpeedDial">
+      <button class="fab-dial-item" id="fabBtnQuickText" title="Quick Text / Clipboard" type="button">
+        <span class="fab-dial-label">Quick Text</span>
+        <span class="fab-dial-icon" id="fabIconQuickText"></span>
+      </button>
+      <button class="fab-dial-item" id="fabBtnNewFile" title="New Text / Code File" type="button">
+        <span class="fab-dial-label">New File</span>
+        <span class="fab-dial-icon" id="fabIconNewFile"></span>
+      </button>
+      <button class="fab-dial-item" id="fabBtnNewFolder" title="Create Folder" type="button">
+        <span class="fab-dial-label">New Folder</span>
+        <span class="fab-dial-icon" id="fabIconNewFolder"></span>
+      </button>
+      <button class="fab-dial-item" id="fabBtnUploadFolder" title="Upload Folder" type="button">
+        <span class="fab-dial-label">Upload Folder</span>
+        <span class="fab-dial-icon" id="fabIconUploadFolder"></span>
+      </button>
+      <button class="fab-dial-item" id="fabBtnUpload" title="Upload Files" type="button">
+        <span class="fab-dial-label">Upload Files</span>
+        <span class="fab-dial-icon" id="fabIconUpload"></span>
+      </button>
+    </div>
+    <button class="fab-main-btn" id="fabMainBtn" aria-label="Action Menu" type="button" title="Actions">
+      <span class="fab-main-icon" id="fabMainIcon"></span>
+    </button>
+  </div>
+
+    <div class="modal-backdrop bottom-sheet-backdrop" id="bottomSheetBackdrop" style="display: none;">
+    <div class="bottom-sheet" id="actionBottomSheet">
+      <div class="bottom-sheet-drag-handle" id="bottomSheetHandle"></div>
+      <div class="bottom-sheet-header">
+        <div class="bottom-sheet-item-info">
+          <span class="bottom-sheet-icon" id="sheetItemIcon"></span>
+          <div class="bottom-sheet-text">
+            <h4 id="sheetItemName">filename.ext</h4>
+            <span class="subtext" id="sheetItemMeta">2.4 MB &bull; Oct 9, 2026</span>
+          </div>
+        </div>
+        <button class="btn icon-btn sm" id="btnBottomSheetClose" aria-label="Close" type="button">&times;</button>
+      </div>
+      <div class="bottom-sheet-actions" id="sheetActionsContainer">
+              </div>
+    </div>
+  </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fastdrop"
+version = "0.1.0"
+description = "Ultra-lightweight, zero-dependency file drop & sharing server with modern web UI, streaming uploads, authentication, and built-in code editor."
+readme = "README.md"
+authors = [
+    { name = "XIV4M (Shivam)" }
+]
+license = "MIT"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Environment :: Web Environment",
+    "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
+    "Intended Audience :: System Administrators",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Communications :: File Sharing",
+    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+    "Topic :: System :: Networking",
+    "Topic :: Utilities"
+]
+keywords = [
+    "http-server",
+    "file-upload",
+    "file-drop",
+    "uploadserver",
+    "file-sharing",
+    "lightweight",
+    "code-editor",
+    "fastdrop"
+]
+requires-python = ">=3.8"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "build",
+    "twine"
+]
+
+[project.scripts]
+fastdrop = "fastdrop.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/XIV4M/fastdrop"
+Repository = "https://github.com/XIV4M/fastdrop"
+Issues = "https://github.com/XIV4M/fastdrop/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["fastdrop*"]
+
+[tool.setuptools.package-data]
+fastdrop = ["web/*"]
